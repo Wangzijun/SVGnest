@@ -62,6 +62,21 @@
 
 	}
 	
+	// return style node, if any
+	SvgParser.prototype.getStyle = function(){
+		if(!this.svgRoot){
+			return false;
+		}
+		for(var i=0; i<this.svgRoot.children.length; i++){
+			var el = this.svgRoot.children[i];
+			if(el.tagName == 'style'){
+				return el;
+			}
+		}
+		
+		return false;
+	}
+	
 	// set the given path as absolute coords (capital commands)
 	// from http://stackoverflow.com/a/9677915/433888
 	SvgParser.prototype.pathToAbsolute = function(path){
@@ -393,7 +408,7 @@
 		var p;
 		
 		var lastM = 0;
-		for(var i=0; i<seglist.numberOfItems; i++){
+		for(var i=seglist.numberOfItems-1; i>=0; i--){
 			if(i > 0 && seglist.getItem(i).pathSegTypeAsLetter == 'M' || seglist.getItem(i).pathSegTypeAsLetter == 'm'){
 				lastM = i;
 				break;
@@ -667,12 +682,10 @@
 		}
 		
 		// do not include last point if coincident with starting point
-		if(poly.length > 0){
-			while(GeometryUtil.almostEqual(poly[0].x,poly[poly.length-1].x, this.conf.toleranceSvg) && GeometryUtil.almostEqual(poly[0].y,poly[poly.length-1].y, this.conf.toleranceSvg)){
-				poly.pop();
-			}
+		while(poly.length > 0 && GeometryUtil.almostEqual(poly[0].x,poly[poly.length-1].x, this.conf.toleranceSvg) && GeometryUtil.almostEqual(poly[0].y,poly[poly.length-1].y, this.conf.toleranceSvg)){
+			poly.pop();
 		}
-		
+
 		return poly;
 	};
 	
@@ -682,6 +695,7 @@
 	root.SvgParser = {
 		config: parser.config.bind(parser),
 		load: parser.load.bind(parser),
+		getStyle: parser.getStyle.bind(parser),
 		clean: parser.cleanInput.bind(parser),
 		polygonify: parser.polygonify.bind(parser)
 	};
